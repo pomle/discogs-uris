@@ -11,31 +11,31 @@ tried = 0
 failed = 0
 
 while len(queue):
-	url = queue.pop(0)
-	response = requests.get(url, headers={'user-agent': 'pomle/discogs-uris'})
-	releases = json.loads(response.text)
+    url = queue.pop(0)
+    response = requests.get(url, headers={'user-agent': 'pomle/discogs-uris'})
+    releases = json.loads(response.text)
 
-	if 'next' in releases['pagination']['urls']:
-		queue.append(releases['pagination']['urls']['next'])
+    if 'next' in releases['pagination']['urls']:
+        queue.append(releases['pagination']['urls']['next'])
 
-	for release in releases['releases']:
-		title = release['basic_information']['title']
-		artists = []
-		for artist in release['basic_information']['artists']:
-			artists.append(artist['name'])
-		lookup = title + " " + " ".join(artists)
+    for release in releases['releases']:
+        title = release['basic_information']['title']
+        artists = []
+        for artist in release['basic_information']['artists']:
+            artists.append(artist['name'])
+        lookup = title + " " + " ".join(artists)
 
-		tried += 1
+        tried += 1
 
-		response = requests.get('https://api.spotify.com/v1/search',
-								params={'q': lookup, 'type': 'album'})
+        response = requests.get('https://api.spotify.com/v1/search',
+                                params={'q': lookup, 'type': 'album'})
 
-		results = json.loads(response.text)
+        results = json.loads(response.text)
 
-		if len(results['albums']['items']):
-			print results['albums']['items'][0]['uri'], release['instance_id'], lookup
-		else:
-			failed += 1
-			print >> sys.stderr, "%s not found :(" % lookup
+        if len(results['albums']['items']):
+            print results['albums']['items'][0]['uri'], release['instance_id'], lookup
+        else:
+            failed += 1
+            print >> sys.stderr, "%s not found :(" % lookup
 
 print >> sys.stderr, ("Resolved %d of %d albums" % (tried-failed, tried))
