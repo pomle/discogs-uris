@@ -7,6 +7,9 @@ username = sys.argv[1]
 url = 'https://api.discogs.com/users/%s/collection/folders/0/releases' % username
 queue = [url]
 
+tried = 0
+failed = 0
+
 while len(queue):
 	url = queue.pop(0)
 	response = requests.get(url, headers={'user-agent': 'pomle/discogs-uris'})
@@ -19,13 +22,20 @@ while len(queue):
 		title = release['basic_information']['title']
 		artists = []
 		for artist in release['basic_information']['artists']:
-			 artists.append(artist['name'])
+			artists.append(artist['name'])
 		lookup = title + " " + " ".join(artists)
 
-		response = requests.get('https://api.spotify.com/v1/search', params={'q': lookup, 'type': 'album'})
+		tried += 1
+
+		response = requests.get('https://api.spotify.com/v1/search',
+								params={'q': lookup, 'type': 'album'})
+
 		results = json.loads(response.text)
 
 		if len(results['albums']['items']):
 			print results['albums']['items'][0]['uri'], release['instance_id'], lookup
 		else:
+			failed += 1
 			print >> sys.stderr, "%s not found :(" % lookup
+
+print >> sys.stderr, ("Resolved %d of %d albums" % (tried-failed, tried))
