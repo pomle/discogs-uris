@@ -7,11 +7,9 @@ username = sys.argv[1]
 url = 'https://api.discogs.com/users/%s/collection/folders/0/releases' % username
 queue = [url]
 
-
-
 while len(queue):
 	url = queue.pop(0)
-	response = requests.get(url, headers={'user-agent': 'Playlist Import'})
+	response = requests.get(url, headers={'user-agent': 'pomle/discogs-uris'})
 	releases = json.loads(response.text)
 
 	if 'next' in releases['pagination']['urls']:
